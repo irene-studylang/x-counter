@@ -14,6 +14,13 @@
         body { background-color: transparent; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.2s ease-out forwards;
+        }
     </style>
 </head>
 <body>
@@ -86,7 +93,7 @@
                     <div className="flex items-center justify-between mb-4 px-1">
                         <div className="flex items-center gap-2">
                             <Icon name="twitter" className="text-[#1DA1F2]" />
-                            <h1 className="font-bold text-lg">X Tree Counter</h1>
+                            <h1 className="font-bold text-lg text-slate-700">X Tree Counter</h1>
                         </div>
                         {status && (
                             <div className={`text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 transition-all ${status.color}`}>
@@ -100,22 +107,38 @@
                         {posts.map((post, index) => {
                             const length = calculateXLength(post.text);
                             const isOver = length > MAX_WEIGHT;
+                            const isCopied = copiedId === post.id;
+                            
                             return (
                                 <div key={post.id} className="relative group">
                                     {index < posts.length - 1 && (
                                         <div className="absolute left-5 top-10 bottom-[-20px] w-0.5 bg-slate-100"></div>
                                     )}
-                                    <div className={`bg-white rounded-lg border shadow-sm transition-colors ${isOver ? 'border-red-400 bg-red-50/30' : 'border-slate-200'}`}>
+                                    <div className={`bg-white rounded-lg border shadow-sm transition-all duration-200 ${isOver ? 'border-red-400 bg-red-50/30' : 'border-slate-200 shadow-slate-200/50'}`}>
                                         <div className="p-3">
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-[10px] font-bold text-slate-400 uppercase">Post {index + 1}</span>
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-xs font-mono font-bold ${isOver ? 'text-red-500' : 'text-slate-500'}`}>{length}/280</span>
-                                                    <button onClick={() => copyToClipboard(post.id, post.text)} className="p-1 hover:bg-slate-100 rounded transition-colors" title="コピー">
-                                                        {copiedId === post.id ? <Icon name="check" size={14} className="text-green-500" /> : <Icon name="copy" size={14} className="text-slate-400" />}
-                                                    </button>
+                                                    <span className={`text-xs font-mono font-bold mr-1 ${isOver ? 'text-red-500' : 'text-slate-500'}`}>{length}/280</span>
+                                                    
+                                                    {/* Copy Button with Feedback */}
+                                                    <div className="relative flex items-center">
+                                                        {isCopied && (
+                                                            <span className="absolute right-full mr-2 px-2 py-0.5 bg-green-500 text-white text-[9px] font-bold rounded animate-fade-in-up whitespace-nowrap">
+                                                                コピー完了！
+                                                            </span>
+                                                        )}
+                                                        <button 
+                                                            onClick={() => copyToClipboard(post.id, post.text)} 
+                                                            className={`p-1.5 rounded transition-all flex items-center justify-center ${isCopied ? 'bg-green-100 text-green-600 scale-110' : 'text-slate-400 hover:bg-slate-100 hover:text-blue-500'}`}
+                                                            title="コピー"
+                                                        >
+                                                            {isCopied ? <Icon name="check" size={14} /> : <Icon name="copy" size={14} />}
+                                                        </button>
+                                                    </div>
+
                                                     {posts.length > 1 && (
-                                                        <button onClick={() => removePost(post.id)} className="p-1 hover:bg-red-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="削除">
+                                                        <button onClick={() => removePost(post.id)} className="p-1.5 hover:bg-red-100 rounded text-slate-400 hover:text-red-500 transition-colors" title="削除">
                                                             <Icon name="trash-2" size={14} />
                                                         </button>
                                                     )}
@@ -148,7 +171,7 @@
                         </button>
                         
                         {!allPostsValid && posts.some(p => p.text.length > 0) && (
-                            <p className="text-[10px] text-center text-slate-400">
+                            <p className="text-[10px] text-center text-slate-400 px-2 leading-tight">
                                 {posts.some(p => calculateXLength(p.text) > MAX_WEIGHT) ? "文字数を減らしてください" : "空のポストを削除または入力してください"}
                             </p>
                         )}
